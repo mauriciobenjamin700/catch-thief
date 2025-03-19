@@ -13,7 +13,7 @@ from app.core.settings import settings
 class ImageServices:
     
     @staticmethod
-    async def save_image(image: UploadFile) -> str:
+    async def save_image(image: UploadFile | bytes) -> str:
         """
         Save an image to the upload directory
         
@@ -27,7 +27,10 @@ class ImageServices:
         
         with open(abspath(image_path), "wb") as buffer:
             
-            copyfileobj(image.file, buffer)
+            if isinstance(image, bytes):
+                buffer.write(image)
+            else:
+                copyfileobj(image.file, buffer)
             
         return image_path
     
