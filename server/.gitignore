@@ -3,3 +3,9 @@ venv
 __pycache__
 
 *.pyc
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.wav

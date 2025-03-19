@@ -8,7 +8,10 @@ dependencies = [
     "fastapi>=0.115.11",
     "flet>=0.27.6",
     "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "python-multipart>=0.0.20",
     "uvicorn>=0.34.0",
+    "websockets>=15.0.1",
 ]
 
 [dependency-groups]
