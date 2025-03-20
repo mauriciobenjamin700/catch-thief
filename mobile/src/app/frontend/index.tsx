@@ -1,5 +1,4 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { Audio } from "expo-av";
 import { useEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import OpenCVWebView from "../../components/OpenCVWebView"; // Certifique-se de ajustar o caminho conforme necessário
@@ -9,8 +8,6 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [alarmSound, setAlarmSound] = useState<Audio.Sound | null>(null);
-  const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false); // Evita capturas repetidas
   const [opencvLoaded, setOpenCVLoaded] = useState(false); // Gerencia o carregamento do OpenCV.js
   const cameraRef = useRef<CameraView>(null);
@@ -49,10 +46,7 @@ export default function App() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   };
 
-  const toggleMonitoring = async () => {
-    if (isMonitoring) {
-      await stopAlarm(); // Para o alarme ao desativar o monitoramento
-    }
+  const toggleMonitoring = () => {
     setIsMonitoring((prev) => !prev);
   };
 
@@ -69,7 +63,9 @@ export default function App() {
           console.error("Photo base64 data is undefined");
         }
       }
-      setIsDetecting(false);
+      setTimeout(() => {
+        setIsDetecting(false);
+      }, 5000); // Delay de 2 segundos
     }
   };
 
@@ -87,32 +83,11 @@ export default function App() {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
         ws.current.send(byteArray);
-        if (!isAlarmPlaying) {
-          playAlarm(); // Ativa o alarme na primeira captura
-        }
       } catch (error) {
         console.error("Erro ao enviar foto:", error);
       }
     } else {
       console.error("WebSocket is not open");
-    }
-  };
-
-  const playAlarm = async () => {
-    if (!isAlarmPlaying) {
-      const { sound } = await Audio.Sound.createAsync(require("../assets/alarm.mp3"));
-      setAlarmSound(sound);
-      setIsAlarmPlaying(true);
-      await sound.playAsync();
-    }
-  };
-
-  const stopAlarm = async () => {
-    if (alarmSound) {
-      await alarmSound.stopAsync(); // Para o som imediatamente
-      await alarmSound.unloadAsync(); // Libera o recurso do som
-      setAlarmSound(null);
-      setIsAlarmPlaying(false); // Atualiza o estado para remover o botão
     }
   };
 
@@ -128,7 +103,7 @@ export default function App() {
             takePicture();
           }
         }
-      }, 1000); // Captura quadros a cada 1 segundo
+      }, 2000); // Captura quadros a cada 1 segundo
     }
 
     return () => {
@@ -176,12 +151,6 @@ export default function App() {
           )}
 
           {photoUri && <Image source={{ uri: photoUri }} style={styles.preview} />}
-
-          {isAlarmPlaying && (
-            <TouchableOpacity style={styles.alarmButton} onPress={stopAlarm}>
-              <Text style={styles.text}>⏹ Parar Alarme</Text>
-            </TouchableOpacity>
-          )}
         </>
       )}
     </View>
@@ -202,7 +171,6 @@ const styles = StyleSheet.create({
   },
   button: { backgroundColor: "gray", padding: 10, borderRadius: 5 },
   monitorButton: { backgroundColor: "green", padding: 15, borderRadius: 5, margin: 10 },
-  alarmButton: { backgroundColor: "blue", padding: 15, borderRadius: 5, margin: 20, alignItems: "center" },
   text: { fontSize: 18, color: "white" },
   preview: { width: 100, height: 100, alignSelf: "center", marginTop: 10 },
 });
