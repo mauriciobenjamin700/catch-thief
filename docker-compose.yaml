@@ -1,0 +1,14 @@
+networks:
+  sd-network:
+    driver: bridge
+
+services:
+  server:
+    build: 
+      context: ./server/
+      dockerfile: Dockerfile
+    container_name: sd-server
+    ports:
+      - "9000:9000"
+    networks:
+      - sd-network
