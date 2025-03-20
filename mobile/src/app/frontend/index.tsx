@@ -14,7 +14,31 @@ export default function App() {
   const [isDetecting, setIsDetecting] = useState(false); // Evita capturas repetidas
   const [opencvLoaded, setOpenCVLoaded] = useState(false); // Gerencia o carregamento do OpenCV.js
   const cameraRef = useRef<CameraView>(null);
-  const SERVER_URL = "http://192.168.1.3:5000";
+  const SERVER_URL = "ws://192.168.1.22:9000/images/ws"; // URL do WebSocket
+
+  const ws = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    ws.current = new WebSocket(SERVER_URL);
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connection opened");
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, []);
 
   const handleOpenCVLoad = () => {
     console.log("OpenCV.js carregado com sucesso!");
@@ -35,34 +59,42 @@ export default function App() {
   const takePicture = async () => {
     if (cameraRef.current && !isDetecting) {
       setIsDetecting(true); // Evita capturas repetidas
-      const photo = await cameraRef.current.takePictureAsync();
+      const photo = await cameraRef.current.takePictureAsync({ base64: true });
       if (photo) {
         setPhotoUri(photo.uri);
-        await sendPhotoToServer(photo.uri);
+        if (photo.base64) {
+          const byteArray = base64ToByteArray(photo.base64);
+          await sendPhotoToServer(byteArray);
+        } else {
+          console.error("Photo base64 data is undefined");
+        }
       }
       setIsDetecting(false);
     }
   };
 
-  const sendPhotoToServer = async (photoUri: string) => {
-    const formData = new FormData();
-    formData.append("file", {
-      uri: photoUri,
-      name: "intruder.jpg",
-      type: "image/jpg",
-    } as any);
+  const base64ToByteArray = (base64: string): Uint8Array => {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  };
 
-    try {
-      await fetch(`${SERVER_URL}/upload`, {
-        method: "POST",
-        body: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!isAlarmPlaying) {
-        playAlarm(); // Ativa o alarme na primeira captura
+  const sendPhotoToServer = async (byteArray: Uint8Array) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      try {
+        ws.current.send(byteArray);
+        if (!isAlarmPlaying) {
+          playAlarm(); // Ativa o alarme na primeira captura
+        }
+      } catch (error) {
+        console.error("Erro ao enviar foto:", error);
       }
-    } catch (error) {
-      console.error("Erro ao enviar foto:", error);
+    } else {
+      console.error("WebSocket is not open");
     }
   };
 
