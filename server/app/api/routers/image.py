@@ -5,17 +5,29 @@ from fastapi import (
     WebSocketDisconnect
 )
 from fastapi.responses import FileResponse, JSONResponse
+from threading import Thread
 
 
 from app.services.images import ImageServices
+from app.utils.alert import play_notification_sound
 
 
 router = APIRouter(prefix="/images", tags=["Images"])
+
+activate_alert = True
+
+@router.put("/toggle-sound")
+async def toggle_sound():
+    global activate_alert
+    activate_alert = not activate_alert
+    return {"detail": "Alert Activated" if activate_alert else "Alert Not Activated"}
 
 
 @router.post("")
 async def send_image(image: UploadFile):
     image_path = await ImageServices.save_image(image)
+    if activate_alert:
+        Thread(target=play_notification_sound, args=("app/data/bell.mp3",)).start()
     return JSONResponse(
         content={"image_path": image_path},
         status_code=201
