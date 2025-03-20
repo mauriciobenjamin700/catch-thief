@@ -43,3 +43,45 @@ Desenvolver um aplicativo Android que utilize o sensor de proximidade para ativa
     - Explicação do funcionamento
     - Capturas de tela do aplicativo, do servidor e das imagens capturadas
     - Estrutura do código e principais módulos
+
+## 🚀 Como Executar o App
+
+Para executar o projeto, siga os passos abaixo:
+
+### 1. Clone o Repositório
+
+```bash
+git clone https://github.com/mauriciobenjamin700/catch-thief.git
+cd catch-thief
+```
+
+### 2. Configurar e Executar o Servidor
+
+Crie e ative um ambiente virtual Python:
+
+```bash
+cd server
+python -m venv .venv
+source .venv/bin/activate  # No Windows use: .venv\Scripts\activate
+```
+
+Instale as dependências:
+
+```bash
+pip install -r [requirements.txt](./server/requirements.txt)
+```
+
+### 3. Configurar e Executar o Frontend
+
+Instale as dependências do Node.js:
+
+```bash
+cd ../mobile
+npm install
+```
+
+Execute o projeto usando Expo:
+
+```bash
+npx expo start -c
+```
