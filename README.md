@@ -160,7 +160,7 @@ source .venv/bin/activate  # No Windows use: .venv\Scripts\activate
 Instale as dependências:
 
 ```bash
-pip install -r [requirements.txt](./server/requirements.txt)
+pip install -r requirements.txt
 ```
 
 ### 3. Configurar e Executar o Frontend
@@ -177,3 +177,13 @@ Execute o projeto usando Expo:
 ```bash
 npx expo start -c
 ```
+
+Irá aparecer um QrCode [como este](./docs/shell.png), onde deve ser escaneado usando o aplicativo android Expo GO
+
+Após o scan, basta aguardar e o app irá ser carregado pelo [expo go](./docs/expo.png)
+
+![Tela inicial do app](<docs/WhatsApp Image 2025-03-20 at 10.09.11 PM.jpeg>)
+
+![Tela de monitoramento, usando camera traseira](<docs/WhatsApp Image 2025-03-20 at 10.09.12 PM.jpeg>)
+
+![Tela de seleção de modo de trabalho](<docs/WhatsApp Image 2025-03-20 at 11.06.18 PM.jpeg>)
