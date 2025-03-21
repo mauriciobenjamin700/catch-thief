@@ -1,17 +1,17 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
-import OpenCVWebView from "../../components/OpenCVWebView"; // Certifique-se de ajustar o caminho conforme necessário
+import OpenCVWebView from "../../components/OpenCVWebView"; 
 
 export default function App() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [isDetecting, setIsDetecting] = useState(false); // Evita capturas repetidas
-  const [opencvLoaded, setOpenCVLoaded] = useState(false); // Gerencia o carregamento do OpenCV.js
+  const [isDetecting, setIsDetecting] = useState(false); 
+  const [opencvLoaded, setOpenCVLoaded] = useState(false); 
   const cameraRef = useRef<CameraView>(null);
-  const SERVER_URL = "ws://192.168.1.22:9000/images/ws"; // URL do WebSocket
+  const SERVER_URL = "ws://192.168.1.73:9000/images/ws"; 
 
   const ws = useRef<WebSocket | null>(null);
 
@@ -52,7 +52,7 @@ export default function App() {
 
   const takePicture = async () => {
     if (cameraRef.current && !isDetecting) {
-      setIsDetecting(true); // Evita capturas repetidas
+      setIsDetecting(true); 
       const photo = await cameraRef.current.takePictureAsync({ base64: true });
       if (photo) {
         setPhotoUri(photo.uri);
@@ -65,7 +65,7 @@ export default function App() {
       }
       setTimeout(() => {
         setIsDetecting(false);
-      }, 5000); // Delay de 2 segundos
+      }, 5000); // Delay de 5 segundos
     }
   };
 
@@ -98,12 +98,12 @@ export default function App() {
       interval = setInterval(async () => {
         if (cameraRef.current) {
           const photo = await cameraRef.current.takePictureAsync({ base64: true });
-          const hasMotion = photo && detectMotion(photo.base64 ?? ""); // Função fictícia para detectar movimento
+          const hasMotion = photo && detectMotion(photo.base64 ?? ""); 
           if (hasMotion) {
             takePicture();
           }
         }
-      }, 2000); // Captura quadros a cada 1 segundo
+      }, 2000); // Captura quadros a cada 2 segundo
     }
 
     return () => {
@@ -112,8 +112,6 @@ export default function App() {
   }, [isMonitoring]);
 
   const detectMotion = (currentFrame: string): boolean => {
-    // Aqui você pode implementar uma lógica para comparar o quadro atual com o anterior
-    // e detectar mudanças significativas. Por simplicidade, retornamos true.
     return true;
   };
 

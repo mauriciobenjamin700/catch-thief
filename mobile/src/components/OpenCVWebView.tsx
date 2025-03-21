@@ -36,7 +36,7 @@ const OpenCVWebView = ({ onLoad }: { onLoad: () => void }) => {
       onMessage={(event) => {
         if (event.nativeEvent.data === "opencv-loaded") {
           console.log("OpenCV.js carregado com sucesso!");
-          onLoad(); // Notifica o componente pai que o OpenCV foi carregado
+          onLoad();
         }
       }}
     />
