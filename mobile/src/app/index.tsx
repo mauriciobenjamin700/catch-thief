@@ -1,17 +1,18 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
-import OpenCVWebView from "../../components/OpenCVWebView"; 
+import OpenCVWebView from "@/components/OpenCVWebView"; 
 
 export default function App() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [isMonitoring, setIsMonitoring] = useState(false);
+  const [continuosMonitoring, setContinuosMonitoring] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(false); 
   const [opencvLoaded, setOpenCVLoaded] = useState(false); 
   const cameraRef = useRef<CameraView>(null);
-  const SERVER_URL = "ws://192.168.1.73:9000/images/ws"; 
+  const SERVER_URL = "ws://192.168.1.22:9000/images/ws"; 
 
   const ws = useRef<WebSocket | null>(null);
 
@@ -51,6 +52,10 @@ export default function App() {
   };
 
   const takePicture = async () => {
+    setTimeout(() => {
+      console.log("detectando movimento")
+      console.log("isDetecting", isDetecting)
+    }, 15000);
     if (cameraRef.current && !isDetecting) {
       setIsDetecting(true); 
       const photo = await cameraRef.current.takePictureAsync({ base64: true });
@@ -63,9 +68,14 @@ export default function App() {
           console.error("Photo base64 data is undefined");
         }
       }
-      setTimeout(() => {
-        setIsDetecting(false);
-      }, 5000); // Delay de 5 segundos
+      if(continuosMonitoring){
+        setTimeout(() => {
+          setIsDetecting(false);
+        }, 5000); // Delay de 5 segundos
+      }
+      else{
+        setIsDetecting(false)
+      }
     }
   };
 
@@ -98,22 +108,18 @@ export default function App() {
       interval = setInterval(async () => {
         if (cameraRef.current) {
           const photo = await cameraRef.current.takePictureAsync({ base64: true });
-          const hasMotion = photo && detectMotion(photo.base64 ?? ""); 
-          if (hasMotion) {
+     
+          if (photo) {
             takePicture();
           }
         }
-      }, 2000); // Captura quadros a cada 2 segundo
+      }, 5000); // Captura quadros a cada 5 segundos
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [isMonitoring]);
-
-  const detectMotion = (currentFrame: string): boolean => {
-    return true;
-  };
 
   return (
     <View style={styles.container}>
@@ -130,9 +136,14 @@ export default function App() {
       ) : (
         <>
           {!isMonitoring ? (
-            <TouchableOpacity style={styles.monitorButton} onPress={toggleMonitoring}>
+            <View>
+            <TouchableOpacity style={styles.monitorButton} onPress={() => setIsMonitoring(true)}>
               <Text style={styles.text}>Ativar Monitoramento</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.monitorButton} onPress={() => setContinuosMonitoring(!continuosMonitoring)}>
+              <Text style={styles.text}>{continuosMonitoring ? "desativar monitoramento continuo " : "ativar monitoramento continuo"} </Text>
+            </TouchableOpacity>
+            </View>
           ) : (
             <View style={styles.cameraContainer}>
               <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
